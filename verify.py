@@ -14,11 +14,18 @@ import numpy as np
 
 BATCH_SIZE = 1
 
-with tf.Session() as sess:
-    data, model = MNIST(), MNISTModel("models/mnist", sess)
-    data, model = CIFAR(), CIFARModel("models/cifar", sess)
-    data, model = ImageNet(), InceptionModel(sess)
+#Don't hog GPU
+config = tf.ConfigProto()
+config.gpu_options.allow_growth=True
+sess = tf.Session(config=config)
+keras.backend.set_session(sess)
 
+iteration_tuple =[
+    (MNIST(), MNISTModel("models/mnist", sess))
+    ,(CIFAR(), CIFARModel("models/cifar", sess))
+    , ImageNet(), InceptionModel(sess)]
+
+for data, model in iteration_tuple:
     x = tf.placeholder(tf.float32, (None, model.image_size, model.image_size, model.num_channels))
     y = model.predict(x)
 
